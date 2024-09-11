@@ -25,15 +25,15 @@ import { MatSnackBar } from '@angular/material/snack-bar'; // Add this line
 
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
-import { SwPush, SwUpdate, VersionReadyEvent } from '@angular/service-worker'; // Add NgswCommChannel to the import statement
+// import { SwPush, SwUpdate, VersionReadyEvent } from '@angular/service-worker'; // Add NgswCommChannel to the import statement
 import { cilInfo, cilWarning } from '@coreui/icons';
 import { HttpClient, HttpHandler } from '@angular/common/http';
 import { filter } from 'rxjs';
-
+import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
   templateUrl: 'dashboard.component.html',
-  providers: [SwPush, SwUpdate, MatSnackBar, HttpClient],
+  providers: [HttpClient, SocketService],
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
   imports: [WidgetsDropdownComponent, 
@@ -60,22 +60,14 @@ import { filter } from 'rxjs';
             CommonModule],
 })
 
-export class DashboardComponent implements OnChanges, OnInit{
-  ngOnInit(): void {
-    this.buttonFlagLogic();
-  }
-  ngOnChanges(changes: SimpleChanges): void {
-    // if(this.niveis.length > 10){
-    //   this.niveis.shift();
-    // }
-  }
-
+export class DashboardComponent implements OnInit{
+  
   title = 'hydrosense';
-
+  
   icons = { cilWarning, cilInfo };
-
-  public niveis = [1, 2,3,4,5,6,7,8,9,10];
-  public vazoes = [1,2,3,4,5,6,7,8,9,10];
+  
+  public niveis = [];
+  public vazoes = [];
 
   data = {
     labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
@@ -100,10 +92,19 @@ export class DashboardComponent implements OnChanges, OnInit{
   };
   public buttonFlag: boolean = true;
   
-  // constructor(private swUpdate: SwUpdate, private snackBar: MatSnackBar, private swPush: SwPush, private http: HttpClient) {
-  // }
-   
-
+  constructor(private socketService: SocketService) {
+  }
+  ngOnInit(): void {
+    // this.buttonFlagLogic();
+    this.socketService.onMessage().subscribe((message) => {
+      console.log(message);
+      console.log('Mensagem recebida no componente:', message);
+      
+    });
+    // this.socketService.sendMessage('Hello from Angular');
+  }
+  
+  
   public resetArrays() {
     if (this.niveis.length > 10) {
       this.niveis.shift();
