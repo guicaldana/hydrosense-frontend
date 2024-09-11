@@ -110,6 +110,7 @@ export class DashboardComponent implements OnInit{
   ngOnInit(): void {
     // this.buttonFlagLogic();
     this.socketService.onMessage().subscribe((message: any): void => {
+
       this.geral.push(message);
       this.niveis.push(this.geral[this.geral.length - 1].temperature);
       this.vazoes.push(this.geral[this.geral.length - 1].humidity);

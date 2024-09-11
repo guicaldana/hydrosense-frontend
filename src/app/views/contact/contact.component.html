@@ -1,0 +1,32 @@
+<c-card>
+    <c-card-header>
+        
+        <strong> &nbsp; Enviar email</strong>
+      </c-card-header>
+      <c-card-body>
+        <form cForm>
+          <c-row>
+            <c-col [md]="6">
+              <label cLabel> <strong>Nome:</strong></label> <br>
+              <input cFormControl placeholder="Digite seu nome">
+            </c-col>
+            <c-col [md]="6">
+              <label cLabel> <strong>Email:</strong></label><br>
+              <input cFormControl placeholder="Digite seu email">
+            </c-col>
+          </c-row>
+          <br>
+          <c-row>
+            <c-col [md]="12">
+              <label cLabel> <strong>Mensagem:</strong></label><br>
+              <textarea cFormControl placeholder="Digite sua mensagem"></textarea>
+            </c-col>
+          </c-row>
+          <c-row>
+            <c-col [md]="12">
+              <button cButton class="btn btn-primary " (click)="sendEmail()">Enviar</button>
+            </c-col>
+          </c-row>
+        </form>
+      </c-card-body>
+</c-card>
