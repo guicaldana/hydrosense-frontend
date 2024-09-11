@@ -21,17 +21,13 @@ import {
 } from '@coreui/angular';
 import { ChartjsComponent, ChartjsModule } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
-import { MatSnackBar } from '@angular/material/snack-bar'; // Add this line
 
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
-// import { SwPush, SwUpdate, VersionReadyEvent } from '@angular/service-worker'; // Add NgswCommChannel to the import statement
 import { cilInfo, cilWarning } from '@coreui/icons';
 import { HttpClient, HttpHandler } from '@angular/common/http';
-import { filter } from 'rxjs';
 import { SocketService } from 'src/app/services/socket.service';
 import { ChangeDetectorRef } from '@angular/core';
-import { fill } from 'lodash-es';
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -72,9 +68,10 @@ export class DashboardComponent implements OnInit{
   public niveis: number[] = [];
   public vazoes: number[] = [];
   public geral: any[] = [];
+  public labels: any[] = [];
 
   data = {
-    labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+    labels: [],
     datasets: [
       {
         label: 'Vazão',
@@ -82,8 +79,7 @@ export class DashboardComponent implements OnInit{
         borderColor: 'rgba(220, 220, 220, 1)',
         pointBackgroundColor: 'rgba(220, 220, 220, 1)',
         pointBorderColor: '#fff',
-        data: this.vazoes,
-        fill: false
+        data: this.niveis
       },
       {
         label: 'Nível',
@@ -91,8 +87,7 @@ export class DashboardComponent implements OnInit{
         borderColor: 'rgba(151, 187, 205, 1)',
         pointBackgroundColor: 'rgba(151, 187, 205, 1)',
         pointBorderColor: '#fff',
-        data: this.niveis,
-        fill: false
+        data: this.vazoes
       }
     ]
   };
@@ -114,25 +109,24 @@ export class DashboardComponent implements OnInit{
   }
   ngOnInit(): void {
     // this.buttonFlagLogic();
-    this.socketService.onMessage().subscribe((message) => {
+    this.socketService.onMessage().subscribe((message: any): void => {
       this.geral.push(message);
       this.niveis.push(this.geral[this.geral.length - 1].temperature);
       this.vazoes.push(this.geral[this.geral.length - 1].humidity);
       this.resetArrays();
+      this.labels.push(this.geral[this.geral.length - 1].time);      
       this.changeDetectorRef.detectChanges();
-      console.log(this.niveis);
-
-      
     });
     // this.socketService.sendMessage('Hello from Angular');
   }
   
   
   public resetArrays() {
-    if (this.niveis.length >= 10) {
+    if (this.niveis.length > 10) {
       this.niveis.shift();
+      this.labels.shift();
     }
-    if (this.vazoes.length >= 10) {
+    if (this.vazoes.length > 10) {
       this.vazoes.shift();
     }
   }
@@ -148,10 +142,6 @@ export class DashboardComponent implements OnInit{
     else {
       this.buttonFlag = false;
     }
-
-    console.log(this.buttonFlag);
-    console.log(this.niveis[this.niveis.length -1]);
-    console.log(this.vazoes[this.vazoes.length - 1]);
   }
 
 }

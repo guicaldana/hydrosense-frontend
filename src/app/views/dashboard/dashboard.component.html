@@ -16,7 +16,19 @@
     <strong> &nbsp; Dados atuais</strong>
   </c-card-header>
   <c-card-body>
-    <c-chart type="line" [data]="data" [options]="chartOptions" responsive="true"></c-chart>
+    <!-- <c-chart type="line" [data]="data" [options]="chartOptions"></c-chart> -->
+    <form cForm>
+      <c-row>
+        <c-col [md]="6">
+          <label cLabel> <strong>Nível de vazão:</strong></label> <br>
+          <input cFormControl [value]="this.vazoes[this.vazoes.length - 1]" disabled>
+        </c-col>
+        <c-col [md]="6">
+          <label cLabel> <strong>Nível de água:</strong></label><br>
+          <input cFormControl [value]="this.niveis[this.niveis.length - 1]" disabled>
+        </c-col>
+      </c-row>
+    </form>
   </c-card-body>
     <c-card-footer *ngIf="this.buttonFlag == true">
       <div class="alert alert-info" role="alert" style="text-align: justify">
