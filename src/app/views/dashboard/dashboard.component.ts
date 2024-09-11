@@ -1,5 +1,5 @@
-import { DOCUMENT, NgStyle } from '@angular/common';
-import { Component, DestroyRef, effect, inject, OnInit, Renderer2, signal, WritableSignal } from '@angular/core';
+import { CommonModule, DOCUMENT, NgStyle } from '@angular/common';
+import { Component, DestroyRef, effect, inject, NgModule, OnChanges, OnInit, Renderer2, signal, SimpleChanges, WritableSignal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ChartOptions } from 'chart.js';
 import {
@@ -56,16 +56,78 @@ import { filter } from 'rxjs';
             WidgetsBrandComponent, 
             CardHeaderComponent, 
             TableDirective, 
-            AvatarComponent],
+            AvatarComponent,
+            CommonModule],
 })
-export class DashboardComponent{
+
+export class DashboardComponent implements OnChanges, OnInit{
+  ngOnInit(): void {
+    this.buttonFlagLogic();
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    // if(this.niveis.length > 10){
+    //   this.niveis.shift();
+    // }
+  }
 
   title = 'hydrosense';
 
   icons = { cilWarning, cilInfo };
+
+  public niveis = [1, 2,3,4,5,6,7,8,9,10];
+  public vazoes = [1,2,3,4,5,6,7,8,9,10];
+
+  data = {
+    labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+    datasets: [
+      {
+        label: 'Vazão',
+        backgroundColor: 'rgba(220, 220, 220, 0.2)',
+        borderColor: 'rgba(220, 220, 220, 1)',
+        pointBackgroundColor: 'rgba(220, 220, 220, 1)',
+        pointBorderColor: '#fff',
+        data: this.vazoes
+      },
+      {
+        label: 'Nível',
+        backgroundColor: 'rgba(151, 187, 205, 0.2)',
+        borderColor: 'rgba(151, 187, 205, 1)',
+        pointBackgroundColor: 'rgba(151, 187, 205, 1)',
+        pointBorderColor: '#fff',
+        data: this.niveis
+      }
+    ]
+  };
+  public buttonFlag: boolean = true;
   
   // constructor(private swUpdate: SwUpdate, private snackBar: MatSnackBar, private swPush: SwPush, private http: HttpClient) {
   // }
    
+
+  public resetArrays() {
+    if (this.niveis.length > 10) {
+      this.niveis.shift();
+    }
+    if (this.vazoes.length > 10) {
+      this.vazoes.shift();
+    }
+  }
+
+  public addData() {
+    // preciso do servidor aaaaaa
+  }
+
+  public buttonFlagLogic(){
+    if (this.niveis[this.niveis.length -1] <= 50 && this.vazoes[this.vazoes.length -1] <= 50) {
+      this.buttonFlag = true;
+    }
+    else {
+      this.buttonFlag = false;
+    }
+
+    console.log(this.buttonFlag);
+    console.log(this.niveis[this.niveis.length -1]);
+    console.log(this.vazoes[this.vazoes.length - 1]);
+  }
 
 }
