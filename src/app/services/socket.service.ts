@@ -23,13 +23,12 @@ export class SocketService {
 
   public sendMessage(message: string) {
     this.socket.emit('message', message);
-    console.log('Message sent');
+    // console.log('Message sent');
   }
 
   public onMessage() {
     return new Observable(observer => {
       this.socket.on('sensorData', (msg: string) => {
-        console.log('Mensagem recebida do servidor:', msg); // Debug
         observer.next(msg);
       });
     });

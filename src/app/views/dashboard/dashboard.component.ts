@@ -19,7 +19,7 @@ import {
   TableDirective,
   TextColorDirective
 } from '@coreui/angular';
-import { ChartjsComponent } from '@coreui/angular-chartjs';
+import { ChartjsComponent, ChartjsModule } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
 import { MatSnackBar } from '@angular/material/snack-bar'; // Add this line
 
@@ -30,6 +30,8 @@ import { cilInfo, cilWarning } from '@coreui/icons';
 import { HttpClient, HttpHandler } from '@angular/common/http';
 import { filter } from 'rxjs';
 import { SocketService } from 'src/app/services/socket.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { fill } from 'lodash-es';
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -57,7 +59,8 @@ import { SocketService } from 'src/app/services/socket.service';
             CardHeaderComponent, 
             TableDirective, 
             AvatarComponent,
-            CommonModule],
+            CommonModule,
+            ChartjsModule],
 })
 
 export class DashboardComponent implements OnInit{
@@ -66,8 +69,9 @@ export class DashboardComponent implements OnInit{
   
   icons = { cilWarning, cilInfo };
   
-  public niveis = [];
-  public vazoes = [];
+  public niveis: number[] = [];
+  public vazoes: number[] = [];
+  public geral: any[] = [];
 
   data = {
     labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
@@ -78,7 +82,8 @@ export class DashboardComponent implements OnInit{
         borderColor: 'rgba(220, 220, 220, 1)',
         pointBackgroundColor: 'rgba(220, 220, 220, 1)',
         pointBorderColor: '#fff',
-        data: this.vazoes
+        data: this.vazoes,
+        fill: false
       },
       {
         label: 'Nível',
@@ -86,19 +91,37 @@ export class DashboardComponent implements OnInit{
         borderColor: 'rgba(151, 187, 205, 1)',
         pointBackgroundColor: 'rgba(151, 187, 205, 1)',
         pointBorderColor: '#fff',
-        data: this.niveis
+        data: this.niveis,
+        fill: false
       }
     ]
   };
+
+  public chartOptions: ChartOptions = {
+    responsive: true,
+    scales: {
+      x: {},
+      y: {
+        beginAtZero: true
+      }
+    }
+  };
   public buttonFlag: boolean = true;
   
-  constructor(private socketService: SocketService) {
+  constructor(private socketService: SocketService,
+              private changeDetectorRef: ChangeDetectorRef
+  ) {
   }
   ngOnInit(): void {
     // this.buttonFlagLogic();
     this.socketService.onMessage().subscribe((message) => {
-      console.log(message);
-      console.log('Mensagem recebida no componente:', message);
+      this.geral.push(message);
+      this.niveis.push(this.geral[this.geral.length - 1].temperature);
+      this.vazoes.push(this.geral[this.geral.length - 1].humidity);
+      this.resetArrays();
+      this.changeDetectorRef.detectChanges();
+      console.log(this.niveis);
+
       
     });
     // this.socketService.sendMessage('Hello from Angular');
@@ -106,10 +129,10 @@ export class DashboardComponent implements OnInit{
   
   
   public resetArrays() {
-    if (this.niveis.length > 10) {
+    if (this.niveis.length >= 10) {
       this.niveis.shift();
     }
-    if (this.vazoes.length > 10) {
+    if (this.vazoes.length >= 10) {
       this.vazoes.shift();
     }
   }

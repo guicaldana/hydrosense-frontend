@@ -16,7 +16,7 @@
     <strong> &nbsp; Dados atuais</strong>
   </c-card-header>
   <c-card-body>
-    <c-chart type="line" [data]="data" ></c-chart>
+    <c-chart type="line" [data]="data" [options]="chartOptions" responsive="true"></c-chart>
   </c-card-body>
     <c-card-footer *ngIf="this.buttonFlag == true">
       <div class="alert alert-info" role="alert" style="text-align: justify">
