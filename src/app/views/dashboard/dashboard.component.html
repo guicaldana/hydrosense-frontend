@@ -21,11 +21,11 @@
       <c-row>
         <c-col [md]="6">
           <label cLabel> <strong>Nível de vazão:</strong></label> <br>
-          <input cFormControl [value]="this.vazoes[this.vazoes.length - 1]" disabled>
+          <input cFormControl sizing="lg" [value]="this.vazoes[this.vazoes.length - 1]+'%'" disabled>
         </c-col>
-        <c-col [md]="6">
+        <c-col [lg]="6">
           <label cLabel> <strong>Nível de água:</strong></label><br>
-          <input cFormControl [value]="this.niveis[this.niveis.length - 1]" disabled>
+          <input  cFormControl sizing="lg" [value]="this.niveis[this.niveis.length - 1] + '%'" disabled />
         </c-col>
       </c-row>
     </form>
@@ -36,6 +36,6 @@
           <strong>Os valores de nível e vazão atuais dão indícios de falta d'água em futuro breve, gostaria de chamar um caminhão pipa?</strong> 
         </p>
       </div>
-      <button class="btn btn-primary ">Ativar chamado</button>
+      <button class="btn btn-primary " (click)="goToContactPage()">Entrar em contato</button>
     </c-card-footer>
 </c-card>

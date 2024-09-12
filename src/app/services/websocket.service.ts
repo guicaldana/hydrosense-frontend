@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class WebSocketService {
   private socket!: WebSocket
-  private url: string = 'ws://192.168.15.4:81';  // Substitua pelo IP e porta do seu servidor WebSocket
+  private url: string = 'ws://192.168.173.225:81';  // Substitua pelo IP e porta do seu servidor WebSocket
   private messageSubject = new BehaviorSubject<string>('');
 
   public message$ = this.messageSubject.asObservable();

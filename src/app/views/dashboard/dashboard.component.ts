@@ -30,9 +30,13 @@ import { HttpClient, HttpHandler } from '@angular/common/http';
 import { WebSocketService } from 'src/app/services/websocket.service';
 import { ChangeDetectorRef } from '@angular/core';
 
+import { environment } from '../../../environments/environment'
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideMessaging, getMessaging } from '@angular/fire/messaging';
+
 @Component({
   templateUrl: 'dashboard.component.html',
-  providers: [HttpClient, WebSocketService],
+  providers: [HttpClient, WebSocketService, ],
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
   imports: [WidgetsDropdownComponent, 
@@ -57,7 +61,8 @@ import { ChangeDetectorRef } from '@angular/core';
             TableDirective, 
             AvatarComponent,
             CommonModule,
-            ChartjsModule],
+            ChartjsModule,
+          ],
 })
 
 export class DashboardComponent implements OnInit{
@@ -69,40 +74,8 @@ export class DashboardComponent implements OnInit{
   public niveis: number[] = [];
   public vazoes: number[] = [];
   public geral: any[] = [];
-  public labels: any[] = [];
 
-  data = {
-    labels: [],
-    datasets: [
-      {
-        label: 'Vazão',
-        backgroundColor: 'rgba(220, 220, 220, 0.2)',
-        borderColor: 'rgba(220, 220, 220, 1)',
-        pointBackgroundColor: 'rgba(220, 220, 220, 1)',
-        pointBorderColor: '#fff',
-        data: this.niveis
-      },
-      {
-        label: 'Nível',
-        backgroundColor: 'rgba(151, 187, 205, 0.2)',
-        borderColor: 'rgba(151, 187, 205, 1)',
-        pointBackgroundColor: 'rgba(151, 187, 205, 1)',
-        pointBorderColor: '#fff',
-        data: this.vazoes
-      }
-    ]
-  };
-
-  public chartOptions: ChartOptions = {
-    responsive: true,
-    scales: {
-      x: {},
-      y: {
-        beginAtZero: true
-      }
-    }
-  };
-  public buttonFlag: boolean = true;
+  public buttonFlag: boolean = false;
   public message: string = '';
   public receivedMessages: string[] = [];
   
@@ -115,14 +88,11 @@ export class DashboardComponent implements OnInit{
     this.webSocketService.message$.subscribe((message: string) => {
       message = JSON.parse(message);
       this.geral.push(message);
-      this.niveis.push(this.geral[this.geral.length - 1].temperature);
-      this.vazoes.push(this.geral[this.geral.length - 1].humidity);
-      let date = new Date(this.geral[this.geral.length - 1].timestamp);
-      let label = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
-      this.labels.push(label);   
-      // console.log(this.labels)   
+      this.niveis.push(this.geral[this.geral.length - 1].nivel);
+      this.vazoes.push(this.geral[this.geral.length - 1].vazao);  
       this.resetArrays();
       this.changeDetectorRef.detectChanges();
+      this.buttonFlagLogic();
     });
     // this.socketService.sendMessage('Hello from Angular');
   }
@@ -131,7 +101,6 @@ export class DashboardComponent implements OnInit{
   public resetArrays() {
     if (this.niveis.length > 10) {
       this.niveis.shift();
-      this.labels.shift();
     }
     if (this.vazoes.length > 10) {
       this.vazoes.shift();
@@ -149,6 +118,10 @@ export class DashboardComponent implements OnInit{
     else {
       this.buttonFlag = false;
     }
+  }
+
+  public goToContactPage(){
+    window.location.href = 'http://localhost:4200/#/contact';
   }
 
 }
