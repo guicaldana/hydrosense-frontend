@@ -26,12 +26,13 @@ import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.co
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
 import { cilInfo, cilWarning } from '@coreui/icons';
 import { HttpClient, HttpHandler } from '@angular/common/http';
-import { SocketService } from 'src/app/services/socket.service';
+
+import { WebSocketService } from 'src/app/services/websocket.service';
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   templateUrl: 'dashboard.component.html',
-  providers: [HttpClient, SocketService],
+  providers: [HttpClient, WebSocketService],
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
   imports: [WidgetsDropdownComponent, 
@@ -102,20 +103,25 @@ export class DashboardComponent implements OnInit{
     }
   };
   public buttonFlag: boolean = true;
+  public message: string = '';
+  public receivedMessages: string[] = [];
   
-  constructor(private socketService: SocketService,
-              private changeDetectorRef: ChangeDetectorRef
+  constructor(private changeDetectorRef: ChangeDetectorRef,
+              private webSocketService: WebSocketService
   ) {
   }
   ngOnInit(): void {
     // this.buttonFlagLogic();
-    this.socketService.onMessage().subscribe((message: any): void => {
-
+    this.webSocketService.message$.subscribe((message: string) => {
+      message = JSON.parse(message);
       this.geral.push(message);
       this.niveis.push(this.geral[this.geral.length - 1].temperature);
       this.vazoes.push(this.geral[this.geral.length - 1].humidity);
+      let date = new Date(this.geral[this.geral.length - 1].timestamp);
+      let label = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+      this.labels.push(label);   
+      // console.log(this.labels)   
       this.resetArrays();
-      this.labels.push(this.geral[this.geral.length - 1].time);      
       this.changeDetectorRef.detectChanges();
     });
     // this.socketService.sendMessage('Hello from Angular');
