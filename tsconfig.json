@@ -34,5 +34,11 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.spec.json" },
-  ]
+  ],
+  "types": [
+    "node",
+    "jasmine",
+    "jasminewd2",
+    "node"
+  ],
 }

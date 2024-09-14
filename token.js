@@ -1,4 +1,5 @@
-const { google } = require('googleapis');
+import { google } from 'googleapis';
+
 const key = require('/home/guicaldana/Downloads/hydrosensepushnotif-firebase-adminsdk-bk1jh-61ee900f02.json');
 
 async function getAccessToken() {

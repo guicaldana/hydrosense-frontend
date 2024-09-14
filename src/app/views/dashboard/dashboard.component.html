@@ -30,12 +30,12 @@
       </c-row>
     </form>
   </c-card-body>
-    <c-card-footer *ngIf="this.buttonFlag == true">
+    <c-card-footer >
       <div class="alert alert-warning" role="alert" style="text-align: justify">
         <p>
           <strong>Os valores de nível e vazão atuais dão indícios de falta d'água em futuro breve, gostaria de chamar um caminhão pipa?</strong> 
         </p>
       </div>
-      <button class="btn btn-primary " (click)="goToContactPage()">Entrar em contato</button>
+      <button class="btn btn-primary " (click)="sendMessage()">Entrar em contato</button>
     </c-card-footer>
 </c-card>

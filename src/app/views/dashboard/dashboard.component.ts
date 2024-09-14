@@ -25,10 +25,12 @@ import { IconDirective } from '@coreui/icons-angular';
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
 import { cilInfo, cilWarning } from '@coreui/icons';
-import { HttpClient, HttpHandler } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHandler, HttpHeaders } from '@angular/common/http';
 
 import { WebSocketService } from 'src/app/services/websocket.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { MessagingService } from 'src/app/services/messaging.service';
+import {TokenService} from 'src/app/services/token.service';
 
 
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
@@ -36,9 +38,11 @@ import { environment } from "../../../environments/environment";
 import { initializeApp } from "firebase/app";
 initializeApp(environment.firebase);
 
+import { google } from 'googleapis';
+
 @Component({
   templateUrl: 'dashboard.component.html',
-  providers: [HttpClient, WebSocketService, ],
+  providers: [HttpClient, WebSocketService, MessagingService, TokenService],
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
   imports: [WidgetsDropdownComponent, 
@@ -64,6 +68,7 @@ initializeApp(environment.firebase);
             AvatarComponent,
             CommonModule,
             ChartjsModule,
+            HttpClientModule
           ],
 })
 
@@ -79,10 +84,16 @@ export class DashboardComponent implements OnInit{
 
   public buttonFlag: boolean = false;
   public message: any = null;
+  public currentToken: string = "";
+  public accessToken: string = "";
+
   
   constructor(private changeDetectorRef: ChangeDetectorRef,
-              private webSocketService: WebSocketService
-  ) {
+              private webSocketService: WebSocketService,
+              private http: HttpClient,
+              private messagingService: MessagingService,
+              private tokenService: TokenService
+              ) {
   }
   ngOnInit(): void {
     // this.buttonFlagLogic();
@@ -98,6 +109,7 @@ export class DashboardComponent implements OnInit{
     });
     this.requestPermission();
     this.listen();
+    this.getAccessToken();
     // this.socketService.sendMessage('Hello from Angular');
   }
   
@@ -136,6 +148,7 @@ export class DashboardComponent implements OnInit{
       if (currentToken) {
         console.log("Token")
         console.log(currentToken);
+        this.currentToken = currentToken; 
       } else {
         console.log('No registration token available. Request permission to generate one.');
       }
@@ -151,6 +164,25 @@ export class DashboardComponent implements OnInit{
       this.message=payload;
     });
   }
-  
 
+  public sendMessage() {
+    this.messagingService.sendNotification(this.currentToken, this.accessToken).subscribe((response) => {
+      console.log(response);
+    }
+    );       
+  }
+
+
+  
+  public getAccessToken() {
+    this.tokenService.getAccessToken().subscribe(
+      (data) => {
+        this.accessToken = data.accessToken;
+        console.log('Access Token:', this.accessToken);
+      },
+      (error) => {
+        console.error('Error fetching access token:', error);
+      }
+    );
+  }
 }
