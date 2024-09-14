@@ -8,7 +8,10 @@ import { ColorModeService } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from './icons/icon-subset';
 import {SwPush} from '@angular/service-worker';
-import { getToken, getMessaging, Messaging } from 'firebase/messaging';
+
+import { environment } from "../environments/environment";
+import { initializeApp } from "firebase/app";
+initializeApp(environment.firebase);
 
 @Component({
   selector: 'app-root',

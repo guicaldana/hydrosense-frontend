@@ -30,9 +30,11 @@ import { HttpClient, HttpHandler } from '@angular/common/http';
 import { WebSocketService } from 'src/app/services/websocket.service';
 import { ChangeDetectorRef } from '@angular/core';
 
-import { environment } from '../../../environments/environment'
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideMessaging, getMessaging } from '@angular/fire/messaging';
+
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { environment } from "../../../environments/environment";
+import { initializeApp } from "firebase/app";
+initializeApp(environment.firebase);
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -76,8 +78,7 @@ export class DashboardComponent implements OnInit{
   public geral: any[] = [];
 
   public buttonFlag: boolean = false;
-  public message: string = '';
-  public receivedMessages: string[] = [];
+  public message: any = null;
   
   constructor(private changeDetectorRef: ChangeDetectorRef,
               private webSocketService: WebSocketService
@@ -93,7 +94,10 @@ export class DashboardComponent implements OnInit{
       this.resetArrays();
       this.changeDetectorRef.detectChanges();
       this.buttonFlagLogic();
+
     });
+    this.requestPermission();
+    this.listen();
     // this.socketService.sendMessage('Hello from Angular');
   }
   
@@ -123,5 +127,30 @@ export class DashboardComponent implements OnInit{
   public goToContactPage(){
     window.location.href = 'http://localhost:4200/#/contact';
   }
+
+  requestPermission() {
+
+    const messaging = getMessaging();
+
+    getToken(messaging, { vapidKey: environment.firebase.vapidKey }).then((currentToken) => {
+      if (currentToken) {
+        console.log("Token")
+        console.log(currentToken);
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+      }
+    }).catch((err) => {
+      console.log('An error occurred while retrieving token. ', err);
+    });
+
+  }
+  listen() {
+    const messaging = getMessaging();
+    onMessage(messaging, (payload) => {
+      console.log('Message received. ', payload);
+      this.message=payload;
+    });
+  }
+  
 
 }
