@@ -16,7 +16,7 @@
     <strong> &nbsp; Dados atuais</strong>
   </c-card-header>
   <c-card-body>
-    <!-- <c-chart type="line" [data]="data"></c-chart> -->
+    
     <form cForm>
       <c-row>
         <c-col [md]="6">
@@ -29,13 +29,30 @@
         </c-col>
       </c-row>
     </form>
+    <br>
+    <c-accordion>
+      <c-accordion-item #item0="cAccordionItem" [visible]="false">
+        <ng-template cTemplateId="accordionHeaderTemplate">
+          <button (click)="item0.toggleItem()" [collapsed]="!item0.visible" cAccordionButton>
+            <strong>Ver gráficos das últimas medições</strong>
+          </button>
+        </ng-template>
+        <ng-template cTemplateId="accordionBodyTemplate">
+          <div class="accordion-body">
+            <c-chart type="line" [data]="data"></c-chart>
+          </div>
+        </ng-template>
+      </c-accordion-item>
+    </c-accordion>
+    <br>
+    <div class="alert alert-warning" role="alert" style="text-align: justify">
+      <p>
+        <strong>Os valores de nível e vazão atuais dão indícios de falta d'água em futuro breve, gostaria de chamar um caminhão pipa?</strong> 
+      </p>
+    </div>
   </c-card-body>
     <c-card-footer >
-      <div class="alert alert-warning" role="alert" style="text-align: justify">
-        <p>
-          <strong>Os valores de nível e vazão atuais dão indícios de falta d'água em futuro breve, gostaria de chamar um caminhão pipa?</strong> 
-        </p>
-      </div>
-      <button class="btn btn-primary " (click)="sendMessage()">Entrar em contato</button>
+      <button class="btn btn-primary " (click)="sendMessage()">Teste de notificação</button>
+      <button class="btn btn-primary " (click)="goToContactPage()">Entrar em contato</button>
     </c-card-footer>
 </c-card>

@@ -3,6 +3,7 @@ import { Component, DestroyRef, effect, inject, NgModule, OnChanges, OnInit, Ren
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ChartOptions } from 'chart.js';
 import {
+  AccordionModule,
   AvatarComponent,
   ButtonDirective,
   ButtonGroupComponent,
@@ -17,7 +18,11 @@ import {
   ProgressComponent,
   RowComponent,
   TableDirective,
-  TextColorDirective
+  TextColorDirective,
+  AccordionComponent,
+  AccordionItemComponent,
+  TemplateIdDirective,
+  AccordionButtonDirective
 } from '@coreui/angular';
 import { ChartjsComponent, ChartjsModule } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
@@ -37,8 +42,6 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { environment } from "../../../environments/environment";
 import { initializeApp } from "firebase/app";
 initializeApp(environment.firebase);
-
-import { google } from 'googleapis';
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -68,7 +71,11 @@ import { google } from 'googleapis';
             AvatarComponent,
             CommonModule,
             ChartjsModule,
-            HttpClientModule
+            HttpClientModule,
+            AccordionModule,
+            AccordionComponent,
+            AccordionItemComponent,
+            TemplateIdDirective
           ],
 })
 
@@ -87,6 +94,29 @@ export class DashboardComponent implements OnInit{
   public currentToken: string = "";
   public accessToken: string = "";
 
+
+  data = {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    datasets: [
+      {
+        label: 'Nível',
+        backgroundColor: 'rgba(220, 220, 220, 0.2)',
+        borderColor: 'rgba(220, 220, 220, 1)',
+        pointBackgroundColor: 'rgba(220, 220, 220, 1)',
+        pointBorderColor: '#fff',
+        data: this.niveis
+      },
+      {
+        label: 'Vazão',
+        backgroundColor: 'rgba(151, 187, 205, 0.2)',
+        borderColor: 'rgba(151, 187, 205, 1)',
+        pointBackgroundColor: 'rgba(151, 187, 205, 1)',
+        pointBorderColor: '#fff',
+        data: this.vazoes
+      }
+    ]
+  };
+
   
   constructor(private changeDetectorRef: ChangeDetectorRef,
               private webSocketService: WebSocketService,
@@ -96,7 +126,6 @@ export class DashboardComponent implements OnInit{
               ) {
   }
   ngOnInit(): void {
-    // this.buttonFlagLogic();
     this.webSocketService.message$.subscribe((message: string) => {
       message = JSON.parse(message);
       this.geral.push(message);
@@ -110,7 +139,6 @@ export class DashboardComponent implements OnInit{
     this.requestPermission();
     this.listen();
     this.getAccessToken();
-    // this.socketService.sendMessage('Hello from Angular');
   }
   
   
@@ -121,10 +149,6 @@ export class DashboardComponent implements OnInit{
     if (this.vazoes.length > 10) {
       this.vazoes.shift();
     }
-  }
-
-  public addData() {
-    // preciso do servidor aaaaaa
   }
 
   public buttonFlagLogic(){
@@ -185,4 +209,5 @@ export class DashboardComponent implements OnInit{
       }
     );
   }
+
 }
