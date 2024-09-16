@@ -7,6 +7,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
 import emailjs from '@emailjs/browser'; // Import emailjs library
+import { cilAt } from '@coreui/icons';
 
 @Component({
   selector: 'app-contact',
@@ -43,6 +44,10 @@ export class ContactComponent {
   public visibleContactConcluded: boolean = false;
   public submittedContactForm: boolean = false;
   public visibleContactFailed: boolean = false;
+
+  icons = {
+    cilAt
+  }
 
   constructor(private formBuilder: FormBuilder) { }
 
