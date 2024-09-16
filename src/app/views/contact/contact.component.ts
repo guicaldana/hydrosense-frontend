@@ -1,7 +1,7 @@
 import { NgStyle, CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { TextColorDirective, CardComponent, CardBodyComponent, RowComponent, ColComponent, ButtonDirective, ButtonGroupComponent, FormCheckLabelDirective, CardFooterComponent, GutterDirective, ProgressBarDirective, ProgressComponent, CardHeaderComponent, TableDirective, AvatarComponent } from '@coreui/angular';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TextColorDirective, CardComponent, CardBodyComponent, RowComponent, ColComponent, ButtonDirective, ButtonGroupComponent, FormCheckLabelDirective, CardFooterComponent, GutterDirective, ProgressBarDirective, ProgressComponent, CardHeaderComponent, TableDirective, AvatarComponent, ModalComponent, ModalModule, FormModule } from '@coreui/angular';
 import { ChartjsComponent, ChartjsModule } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
@@ -33,30 +33,55 @@ import emailjs from '@emailjs/browser'; // Import emailjs library
             TableDirective, 
             AvatarComponent,
             CommonModule,
-            ChartjsModule],
+            ChartjsModule,
+            ModalModule,
+            FormModule],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })
 export class ContactComponent {
+  public visibleContactConcluded: boolean = false;
+  public submittedContactForm: boolean = false;
+  public visibleContactFailed: boolean = false;
 
   constructor(private formBuilder: FormBuilder) { }
 
   contactForm = this.formBuilder.group({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    name: ['', Validators.required],
+    email: ['', Validators.required],
+    service: ['', Validators.required],
+    address: ['', Validators.required],
+    message : ['']
   });
 
   public sendEmail(){
-    console.log('Email enviado')
-    emailjs.init('EujzZ_EZR3z2beNlL')
-    emailjs.send("service_9gc89hw","template_dybhgm2",{
-      from_name: "a",
-      to_name: "a",
-      from_email: "a",
-      from_subject: "a",
-      message: "a",
-      });
+    if(this.contactForm.valid){
+      console.log('Email enviado')
+      emailjs.init('EujzZ_EZR3z2beNlL')
+      emailjs.send("service_9gc89hw","template_dybhgm2",{
+        from_name: this.contactForm.value.name,
+        from_email: this.contactForm.value.email,
+        from_service: this.contactForm.value.service,
+        address: this.contactForm.value.address,
+        message: this.contactForm.value.message
+        });
+      this.visibleContactConcluded = true;
+      this.submittedContactForm = true;
+      setTimeout(() => {
+        this.contactForm.reset();
+        this.submittedContactForm = false;
+        this.visibleContactConcluded = false;
+      }, 3000);
+    }else{
+      this.visibleContactFailed = true;
+    }
+  }
+
+  public closeFailModal(){
+    this.visibleContactFailed = false;
+  }
+
+  public closeSuccessModal(){
+    this.visibleContactConcluded = false;
   }
 }

@@ -4,29 +4,100 @@
         <strong> &nbsp; Enviar email</strong>
       </c-card-header>
       <c-card-body>
-        <form cForm>
+        <form cForm [formGroup]="contactForm">
           <c-row>
-            <c-col [md]="6">
-              <label cLabel> <strong>Nome:</strong></label> <br>
-              <input cFormControl placeholder="Digite seu nome">
+            <c-col *ngIf="contactForm.controls['name'] as ctrl" [sm]="6">
+              <label cLabel cFormCheckLabel> <strong>Nome completo:</strong></label> <br>
+              <input cFormControl placeholder="Digite seu nome" formControlName="name" type="text" class="form-control"
+              [valid]="
+							(ctrl.invalid && ctrl.touched) ||
+							(ctrl.invalid && submittedContactForm)
+								? false
+								: undefined
+						"/>
+              <c-form-feedback>Nome é obrigatório</c-form-feedback>
             </c-col>
-            <c-col [md]="6">
+            <c-col *ngIf="contactForm.controls['email'] as ctrl" [sm]="6">
               <label cLabel> <strong>Email:</strong></label><br>
-              <input cFormControl placeholder="Digite seu email">
+              <input cFormControl placeholder="Digite seu email" formControlName="email" class="form-control"
+              [valid]="
+							(ctrl.invalid && ctrl.touched) ||
+							(ctrl.invalid && submittedContactForm)
+								? false
+								: undefined
+						">
+            <c-form-feedback>Email é obrigatório</c-form-feedback>
             </c-col>
           </c-row>
           <br>
           <c-row>
-            <c-col [md]="12">
-              <label cLabel> <strong>Mensagem:</strong></label><br>
-              <textarea cFormControl placeholder="Digite sua mensagem"></textarea>
+            <c-col *ngIf="contactForm.controls['service'] as ctrl" [sm]="6">
+              <label cLabel> <strong>Tipo de serviço:</strong></label><br>
+              <input cFormControl placeholder="Digite o tipo de serviço desejado" formControlName="service" class="form-control"
+              [valid]="
+							(ctrl.invalid && ctrl.touched) ||
+							(ctrl.invalid && submittedContactForm)
+								? false
+								: undefined
+						"
+              />
+              <c-form-feedback>Tipo de serviço é obrigatório</c-form-feedback>
+            </c-col>
+            <c-col *ngIf="contactForm.controls['address'] as ctrl" [sm]="6">
+              <label cLabel > <strong>Endereço:</strong></label><br>
+              <textarea cFormControl placeholder="Digite seu endereço" formControlName="address" class="form-control"
+              [valid]="
+							(ctrl.invalid && ctrl.touched) ||
+							(ctrl.invalid && submittedContactForm)
+								? false
+								: undefined
+						"
+              ></textarea>
+              <c-form-feedback>Endereço é obrigatório</c-form-feedback>
             </c-col>
           </c-row>
-          <c-row>
-            <c-col [md]="12">
-              <button cButton class="btn btn-primary " (click)="sendEmail()">Enviar</button>
+          <c-row >
+            <c-col [sm]="12">
+
+              <label cLabel> <strong>Mensagem:</strong></label><br>
+              <textarea cFormControl placeholder="Digite sua mensagem" formControlName="message" class="form-control"></textarea> 
             </c-col>
           </c-row>
         </form>
       </c-card-body>
+      <c-card-footer>
+        <c-row>
+          <c-col [md]="12">
+            <button cButton class="btn btn-primary " (click)="sendEmail()">Enviar</button>
+          </c-col>
+        </c-row>
+      </c-card-footer>
 </c-card>
+
+
+
+<c-modal backdrop="static" [visible]="visibleContactConcluded">
+	<c-modal-header>
+		<h3 cModalTitle>Sucesso!</h3>
+	</c-modal-header>
+  <c-modal-body>
+    <div class="alert alert-success" role="alert" style="font-size: 18px">
+      Email enviado com sucesso!
+    </div>
+  </c-modal-body>
+</c-modal>
+
+
+<c-modal backdrop="static" [visible]="visibleContactFailed">
+	<c-modal-header>
+		<h3 cModalTitle>Falha!</h3>
+	</c-modal-header>
+  <c-modal-body>
+    <div class="alert alert-danger" role="alert" style="font-size: 18px">
+      Seu email não pôde ser enviado! Reveja seus dados e tente novamente!
+    </div>
+  </c-modal-body>
+	<c-modal-footer>
+    <button cButton class="btn btn-danger" (click)="closeFailModal()">Fechar</button>
+	</c-modal-footer>
+</c-modal>
