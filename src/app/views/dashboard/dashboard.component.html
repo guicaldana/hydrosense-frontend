@@ -5,9 +5,122 @@
 </c-card-header>
   <c-card-body>
     <div class="alert alert-warning" role="alert" style="text-align: justify">
-      Para melhor uso do sistema garanta que o site tenha permissão para mandar notificações
+      Para melhor uso do sistema garanta que o site tenha permissão para mandar notificações e
+      preencha o formulário abaixo para podermos entrar em contato em caso de emergência.
     </div>
+    
+    <form cForm [formGroup]="contactForm">
+      <c-row>
+        <c-col *ngIf="contactForm.controls['name'] as ctrl" [sm]="6">
+          <label cLabel cFormCheckLabel> <strong>Nome completo:</strong></label> <br>
+          <input cFormControl placeholder="Digite seu nome" formControlName="name" type="text" class="form-control"
+          [valid]="
+          (ctrl.invalid && ctrl.touched) ||
+          (ctrl.invalid && submittedContactForm)
+            ? false
+            : undefined
+        "/>
+          <c-form-feedback>Nome é obrigatório</c-form-feedback>
+        </c-col>
+        <c-col *ngIf="contactForm.controls['email'] as ctrl" [sm]="6">
+          <label cLabel> <strong>Email:</strong></label><br>
+          <input cFormControl placeholder="Digite seu email" formControlName="email" class="form-control"
+          [valid]="
+          (ctrl.invalid && ctrl.touched) ||
+          (ctrl.invalid && submittedContactForm)
+            ? false
+            : undefined
+        ">
+        <c-form-feedback>Email é obrigatório</c-form-feedback>
+        </c-col>
+      </c-row>
+      <br>
+      <c-row>
+        <c-col *ngIf="contactForm.controls['address'] as ctrl" [sm]="6">
+          <label cLabel > <strong>Endereço:</strong></label><br>
+          <textarea cFormControl placeholder="Digite seu endereço" formControlName="address" class="form-control"
+          [valid]="
+          (ctrl.invalid && ctrl.touched) ||
+          (ctrl.invalid && submittedContactForm)
+            ? false
+            : undefined
+        "
+          ></textarea>
+          <c-form-feedback>Endereço é obrigatório</c-form-feedback>
+        </c-col>
+        <c-col *ngIf="contactForm.controls['phone'] as ctrl" [sm]="6">
+          <label cLabel> <strong>Telefone:</strong></label><br>
+          <input cFormControl placeholder="Digite seu telefone" formControlName="phone" class="form-control"
+          [valid]="
+          (ctrl.invalid && ctrl.touched) ||
+          (ctrl.invalid && submittedContactForm)
+            ? false
+            : undefined
+        ">
+        <c-form-feedback>Telefone é obrigatório</c-form-feedback>
+        </c-col>
+      </c-row>
+    </form>
+    <!-- TOAST DE FEEDBACK PARA O USUÁRIO SOBRE INFORMAÇÕES INVÁLIDAS -->
+    <br>
+
+  <c-toast
+  #toast="cToast"
+  [autohide]="false"
+  [visible]="flagToastFormSuccess"
+  class="align-items-center bg-success"
+  style="width: 100%"
+  >
+  <div class="d-flex">
+    <c-toast-body class="text-white">
+      <strong style="font-size: 16px">
+        Informações de contato de emergência estão prontas.
+      </strong>
+    </c-toast-body>
+  </div>
+  </c-toast>
+
+
+
+  <c-toast
+  #toast="cToast"
+  [autohide]="false"
+  [visible]="flagToastFormFailed"
+  class="align-items-center bg-danger"
+  style="width: 100%"
+  >
+  <div class="d-flex">
+    <c-toast-body class="text-white">
+      <strong style="font-size: 16px">
+        Estão faltando informações, ou alguma informação está incorreta.
+      </strong>
+    </c-toast-body>
+  </div>
+  </c-toast>
+
+
+<!-- ------------------------------------------------------------- -->
+<div *ngIf="this.notificationSeen === false && this.dangerZone === true">
+<br>
+  <div class="alert alert-danger" role="alert" style="text-align: justify" >
+        Os níveis estão em estado emergencial e as notificações continuarão sendo enviadas com certa frequência, para desativá-las
+        aperte no botão: <strong>Notificação visualizada</strong> 
+      </div>
+</div>  
+<div *ngIf="this.emailSent === true">
+  <br>
+    <div class="alert alert-info" role="alert" style="text-align: justify" >
+          Informamos que o email já foi enviado e iremos entrar em contato assim que possível para resolver o problema.
+        </div>
+  </div>
+  
   </c-card-body>
+  <c-card-footer>
+    <div class="d-grid gap-2 d-flex justify-content-end">
+      <button cButton class="btn btn-success " (click)="saveData()" style="color: white;">Salvar</button>
+      <button cButton *ngIf="this.notificationSeen === false && this.dangerZone === true" class="btn btn-warning " (click)="setNotificationSeen()" style="color: white;" >Notificação visualizada</button>
+    </div>
+  </c-card-footer>
 </c-card>
 <br>
 <c-card>
@@ -39,20 +152,24 @@
         </ng-template>
         <ng-template cTemplateId="accordionBodyTemplate">
           <div class="accordion-body">
-            <c-chart type="line" [data]="data"></c-chart>
+            <c-chart type="line" [data]="data" [options]="chartOptions"></c-chart>
           </div>
         </ng-template>
       </c-accordion-item>
-    </c-accordion>
-    <br>
-    <div class="alert alert-danger" role="alert" style="text-align: justify">
-      <p>
-        <strong>Os valores de nível e vazão atuais dão indícios de falta d'água em futuro breve. Entre em contato para solicitar atendimento.</strong> 
-      </p>
-    </div>
+    </c-accordion>     
   </c-card-body>
-    <c-card-footer >
-      <button class="btn btn-primary " (click)="sendMessage()">Teste de notificação</button>
-      <button class="btn btn-primary " (click)="goToContactPage()">Entrar em contato</button>
-    </c-card-footer>
 </c-card>
+
+
+
+<c-modal backdrop="static" [visible]="modalNotificationSeen">
+	<c-modal-header>
+		<h3 cModalTitle>Entendido! 🫡</h3>
+	</c-modal-header>
+  <c-modal-body>
+    <div class="alert alert-success" role="alert" style="font-size: 18px">
+      Notificação foi vista, então iremos parar com o ciclo de envios de notificações!
+    </div>
+  </c-modal-body>
+</c-modal>
+

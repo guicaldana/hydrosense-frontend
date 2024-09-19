@@ -66,11 +66,9 @@
         </form>
       </c-card-body>
       <c-card-footer>
-        <c-row>
-          <c-col [md]="12">
-            <button cButton class="btn btn-primary " (click)="sendEmail()">Enviar</button>
-          </c-col>
-        </c-row>
+        <div class="d-grid gap-2 d-flex justify-content-end">
+          <button cButton class="btn btn-primary " (click)="sendEmail()">Enviar</button>
+        </div>
       </c-card-footer>
 </c-card>
 

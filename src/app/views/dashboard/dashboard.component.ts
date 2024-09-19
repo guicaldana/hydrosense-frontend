@@ -1,7 +1,7 @@
 import { CommonModule, DOCUMENT, NgStyle } from '@angular/common';
 import { Component, DestroyRef, effect, inject, NgModule, OnChanges, OnInit, Renderer2, signal, SimpleChanges, WritableSignal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ChartOptions } from 'chart.js';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChartOptions, scales } from 'chart.js';
 import {
   AccordionModule,
   AvatarComponent,
@@ -22,7 +22,10 @@ import {
   AccordionComponent,
   AccordionItemComponent,
   TemplateIdDirective,
-  AccordionButtonDirective
+  AccordionButtonDirective,
+  FormModule,
+  ToastModule,
+  ModalModule
 } from '@coreui/angular';
 import { ChartjsComponent, ChartjsModule } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
@@ -42,6 +45,9 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { environment } from "../../../environments/environment";
 import { initializeApp } from "firebase/app";
 initializeApp(environment.firebase);
+
+import emailjs from '@emailjs/browser'; // Import emailjs library
+import { delay } from 'rxjs';
 
 @Component({
   templateUrl: 'dashboard.component.html',
@@ -75,7 +81,10 @@ initializeApp(environment.firebase);
             AccordionModule,
             AccordionComponent,
             AccordionItemComponent,
-            TemplateIdDirective
+            TemplateIdDirective,
+            FormModule,
+            ToastModule,
+            ModalModule
           ],
 })
 
@@ -88,12 +97,25 @@ export class DashboardComponent implements OnInit{
   public niveis: number[] = [];
   public vazoes: number[] = [];
   public geral: any[] = [];
-
+  
   public buttonFlag: boolean = false;
   public message: any = null;
   public currentToken: string = "";
   public accessToken: string = "";
+  public notificationSent: boolean = false;
+  public emailSent: boolean = false;
+  public checkInterval: any = null;
+  public notificationSeen: boolean = false;
+  public modalNotificationSeen: boolean = false;
+  public flagToastFormFailed: boolean = false;
+  public submittedContactForm: boolean = false;
+  
+  public notificationSentCount: number = 0;
+  public notificationInterval: any = null;
+  public dangerZone: boolean = false;
 
+  public flagToastFormSuccess: boolean = false;
+  
 
   data = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -117,12 +139,29 @@ export class DashboardComponent implements OnInit{
     ]
   };
 
+  chartOptions = {
+    scales: {
+      y: 
+        {
+            beginAtZero: true
+          }
+        }
+  };
+
+  public contactForm = this.formBuilder.group({
+    name: ['', Validators.required],
+    email: ['', Validators.required],
+    address: ['', Validators.required],
+    phone: ['', Validators.required],
+  });
+  
+
   
   constructor(private changeDetectorRef: ChangeDetectorRef,
               private webSocketService: WebSocketService,
-              private http: HttpClient,
               private messagingService: MessagingService,
-              private tokenService: TokenService
+              private tokenService: TokenService,
+              private formBuilder: FormBuilder,
               ) {
   }
   ngOnInit(): void {
@@ -131,10 +170,16 @@ export class DashboardComponent implements OnInit{
       this.geral.push(message);
       this.niveis.push(this.geral[this.geral.length - 1].nivel);
       this.vazoes.push(this.geral[this.geral.length - 1].vazao);  
+      if(this.vazoes[this.vazoes.length -1] > 50 || this.niveis[this.niveis.length -1] > 50){
+        this.notificationSeen = false;
+        this.dangerZone = false;
+      }else if(this.vazoes[this.vazoes.length -1] <= 50 && this.niveis[this.niveis.length -1] <= 50){
+        this.dangerZone = true;
+      }
       this.resetArrays();
       this.changeDetectorRef.detectChanges();
-      this.buttonFlagLogic();
-
+      this.sendOnlyOneMessage(this.vazoes[this.vazoes.length -1], this.niveis[this.niveis.length -1]);
+      this.sendEmail();
     });
     this.requestPermission();
     this.listen();
@@ -148,15 +193,6 @@ export class DashboardComponent implements OnInit{
     }
     if (this.vazoes.length > 10) {
       this.vazoes.shift();
-    }
-  }
-
-  public buttonFlagLogic(){
-    if (this.niveis[this.niveis.length -1] <= 50 && this.vazoes[this.vazoes.length -1] <= 50) {
-      this.buttonFlag = true;
-    }
-    else {
-      this.buttonFlag = false;
     }
   }
 
@@ -208,6 +244,84 @@ export class DashboardComponent implements OnInit{
         console.error('Error fetching access token:', error);
       }
     );
+  }
+
+  public sendOnlyOneMessage(vazao: number, nivel:number) {
+    if(this.notificationSeen == false){
+      if(this.niveis[this.niveis.length -1] <= 50 && this.vazoes[this.vazoes.length -1] <= 50 && this.notificationSentCount == 0){
+        this.sendMessage();
+        this.notificationSentCount++;
+        
+        this.notificationInterval = setInterval(() => {
+          if (this.notificationSentCount < 3) {
+            this.sendMessage();
+            this.notificationSentCount++;
+          } else {
+            clearInterval(this.notificationInterval);  
+            this.notificationSentCount = 0;
+          }
+        }, 5000);
+      }else if(this.niveis[this.niveis.length -1] > 50 && this.vazoes[this.vazoes.length -1] > 50){
+          clearInterval(this.notificationInterval);
+          this.notificationSentCount = 0;   
+          this.notificationSeen = false;
+      }
+    }else if(this.notificationSeen == true && this.niveis[this.niveis.length -1] > 50 && this.vazoes[this.vazoes.length -1] > 50){
+      clearInterval(this.notificationInterval);
+      this.notificationSentCount = 0;
+      this.notificationSeen = false;
+    }
+  }
+
+  public sendEmail(){
+    if(this.niveis[this.niveis.length -1] <= 50 && this.vazoes[this.vazoes.length -1] <= 50){
+      if(this.submittedContactForm){
+        if(this.contactForm.valid){
+          if(!this.emailSent){
+            console.log('Email enviado')
+              emailjs.init('EujzZ_EZR3z2beNlL')
+              emailjs.send("service_9gc89hw","template_dybhgm2",{
+                from_name: this.contactForm.value.name,
+                from_email: this.contactForm.value.email,
+                from_service: "Abastecimento Urgente",
+                address: this.contactForm.value.address,
+                message: this.contactForm.value.phone
+                });
+              this.emailSent = true;
+          }else{
+            console.log('Email já enviado');
+          }
+        }
+      }
+    }else{
+      console.log('Nível e Vazão estão normais')
+      this.emailSent = false;
+    }
+  }
+
+  public saveData(){
+    if(this.contactForm.valid){
+      console.log('Dados salvos')
+      this.submittedContactForm = true;
+      this.flagToastFormSuccess = true;
+			setTimeout(() => {
+				this.flagToastFormSuccess = false;
+			}, 5000);
+    }else{
+      console.log('Formulário inválido')
+      this.flagToastFormFailed = true;
+      setTimeout(() => {
+        this.flagToastFormFailed = false;
+      }, 5000);
+    }
+  }
+
+  public setNotificationSeen(){
+    this.notificationSeen = true;
+    this.modalNotificationSeen = true;
+    setTimeout(() => {
+      this.modalNotificationSeen = false;
+    },3000);
   }
 
 }
